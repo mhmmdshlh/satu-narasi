@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --background-image-red-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 2rem;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f0f0f0;
+}
