@@ -1,6 +1,6 @@
 import PageHeader from "../components/PageHeader"
-import { DiscussionForm } from "../features/forum/DiscussionForm"
 import { SurveyForm } from "../features/forum/SurveyForm"
+import { DiscussionSection } from "../features/forum/DiscussionSection"
 
 export const Forum = () => {
     return (
@@ -9,7 +9,7 @@ export const Forum = () => {
                 title="Suara Warga"
                 description="Diskusikan isu terkini bersama komunitas dan ahli"
             />
-            <DiscussionForm />
+            <DiscussionSection />
             <SurveyForm />
         </>
     )

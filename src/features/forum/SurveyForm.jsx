@@ -3,7 +3,6 @@ import { faVoteYea } from "@fortawesome/free-solid-svg-icons"
 import { BaseBox } from "../../components/BaseBox"
 import { SurveyItem } from "./SurveyItem"
 import { Btn } from "../../components/Button"
-import { CommentBox } from "./CommentBox"
 
 export const SurveyForm = () => {
     return (
@@ -19,10 +18,6 @@ export const SurveyForm = () => {
                     <SurveyItem title="Kesehatan" description="Fasilitas kesehatan, tenaga medis, BPJS" votes={0} id="health-input" />
                     <SurveyItem title="Lingkungan & Kebersihan" description="Pengelolaan sampah, ruang terbuka hijau, polusi" votes={0} id="env-input" />
                     <SurveyItem title="Ekonomi & Ketenagakerjaan" description="Lapangan kerja, UMKM, investasi" votes={0} id="economy-input" />
-                </div>
-
-                <div className="mb-6">
-                    <CommentBox />
                 </div>
 
                 <Btn color="bg-red-gradient px-8 py-4" onClick={() => { }}>
