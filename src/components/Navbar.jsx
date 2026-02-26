@@ -39,7 +39,7 @@ export const Navbar = () => {
                 {user ? (
                     <div className="inline-flex items-center gap-3">
                         <span className="text-white text-sm font-medium">
-                            {profile?.username || user.email}
+                            {profile?.username}
                         </span>
                         <button
                             onClick={handleLogout}

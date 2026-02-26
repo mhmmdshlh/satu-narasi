@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom"
 import { Btn } from "../../components/Button"
+import { useAuth } from "../../contexts/AuthContext"
 
 export const HeroSection = () => {
     const navigate = useNavigate()

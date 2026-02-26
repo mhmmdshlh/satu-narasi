@@ -1,7 +1,8 @@
 import { LoginLayout } from "../layouts/LoginLayout"
 import { Link, useNavigate } from "react-router-dom"
 import { useState } from "react"
-import { signUpWithEmail } from "../services/auth/auth.service"
+import { signInWithEmail, signUpWithEmail } from "../services/auth/auth.service"
+import { BackButton } from "../components/BackButton"
 
 export const SignUp = () => {
     const navigate = useNavigate();
@@ -38,15 +39,15 @@ export const SignUp = () => {
         }
 
         try {
-            await signUpWithEmail(email, password, {
+            const data = await signUpWithEmail(email, password, {
                 username: username,
                 full_name: fullName
             });
             setSuccess(true);
-            // Redirect setelah 2 detik
-            setTimeout(() => {
-                navigate("/login");
-            }, 2000);
+            if (data.session) {
+                await signInWithEmail(email, password);
+                navigate("/");
+            }
         } catch (err) {
             setError(err.message || "Failed to sign up");
         } finally {
@@ -58,12 +59,7 @@ export const SignUp = () => {
         <LoginLayout>
             <div className="relative w-100 p-7 py-10 rounded-2xl shadow-lg bg-[white] text-gray-600 z-10
             after:absolute after:top-0 after:bottom-0 after:-left-1 after:-right-1 after:border-x-3 after:rounded-2xl after:border-red-500 after:-z-20">
-                <Link to="/" className="inline-flex items-center gap-2 text-red-500 hover:text-red-500-dark transition mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-sm font-medium">Back to Home</span>
-                </Link>
+                <BackButton to="/" label="Back to Home" />
                 <div className="text-center">
                     <h2 className="text-3xl font-semibold mb-3">Sign up</h2>
                     <p className="text-gray-400">create your account</p>
@@ -77,7 +73,7 @@ export const SignUp = () => {
 
                 {success && (
                     <div className="mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm">
-                        Account created successfully! Redirecting to login...
+                        Account created successfully!
                     </div>
                 )}
 

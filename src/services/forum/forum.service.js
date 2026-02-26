@@ -196,3 +196,43 @@ export const toggleLike = async (discussionId) => {
         return true; // liked
     }
 };
+
+
+// ========== SURVEY ==========
+
+// Get all issues
+export const getIssues = async () => {
+    const { data, error } = await supabase
+        .from('jabar_issues')
+        .select('*')
+        .order('created_at', { ascending: true });
+    if (error) throw error;
+    return data;
+};
+
+// Get user's current vote (returns issue_id or null)
+export const getUserVote = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data, error } = await supabase
+        .from('issue_votes')
+        .select('issue_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+    if (error) throw error;
+    return data?.issue_id ?? null;
+};
+
+// Vote / unvote / pindah vote
+export const handleVoteCount = async (issue_id) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User must be logged in');
+
+    const { error } = await supabase.rpc('handle_count_issue_votes', {
+        p_issue_id: issue_id,
+        p_voter_id: user.id
+    });
+    if (error) throw error;
+};

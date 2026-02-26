@@ -1,5 +1,5 @@
 -- ============================================
--- FORUM SYSTEM SETUP
+-- Discussion Form
 -- ============================================
 
 -- 1. Create discussions table (topik forum)
@@ -199,6 +199,111 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+
 -- ============================================
--- FORUM SETUP SELESAI!
+-- Survey Form
 -- ============================================
+
+CREATE TABLE IF NOT EXISTS public.jabar_issues (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  issue_name TEXT NOT NULL,
+  issue_description TEXT NOT NULL,
+  total_votes INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.issue_votes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  issue_id UUID REFERENCES public.jabar_issues(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(issue_id, user_id) -- User hanya bisa vote 1x per issue
+);
+
+-- Enable RLS untuk jabar_issues
+ALTER TABLE public.jabar_issues ENABLE ROW LEVEL SECURITY;
+
+
+
+-- Policy: Semua orang bisa lihat jabar_issues
+CREATE POLICY "Jabar issues are viewable by everyone"
+  ON public.jabar_issues
+  FOR SELECT
+  USING (true);
+
+-- Policy: User yang login bisa vote issue
+CREATE POLICY "Authenticated users can vote on issues"
+  ON public.issue_votes
+  FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+-- Function to update updated_at on issue_votes
+CREATE OR REPLACE FUNCTION public.handle_issue_vote_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to update updated_at on issue_votes
+DROP TRIGGER IF EXISTS on_issue_vote_updated ON public.issue_votes;
+CREATE TRIGGER on_issue_vote_updated
+  BEFORE UPDATE ON public.issue_votes
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_issue_vote_updated_at();
+
+-- Function to handle vote count on jabar_issues
+CREATE OR REPLACE FUNCTION handle_count_issue_votes(
+  p_issue_id UUID,
+  p_voter_id UUID
+)
+RETURNS VOID AS $$
+DECLARE
+  v_old_issue UUID;
+BEGIN
+  -- ambil vote lama
+  SELECT issue_id INTO v_old_issue
+  FROM public.issue_votes
+  WHERE user_id = p_voter_id;
+
+  -- CASE 1: belum pernah vote
+  IF v_old_issue IS NULL THEN
+    
+    INSERT INTO public.issue_votes (user_id, issue_id)
+    VALUES (p_voter_id, p_issue_id);
+
+    UPDATE public.jabar_issues
+    SET total_votes = total_votes + 1
+    WHERE id = p_issue_id;
+
+  -- CASE 2: klik issue yang sama → UNVOTE
+  ELSIF v_old_issue = p_issue_id THEN
+
+    DELETE FROM public.issue_votes
+    WHERE user_id = p_voter_id;
+
+    UPDATE public.jabar_issues
+    SET total_votes = total_votes - 1
+    WHERE id = p_issue_id;
+
+  -- CASE 3: pindah vote
+  ELSE
+
+    UPDATE public.jabar_issues
+    SET total_votes = total_votes - 1
+    WHERE id = v_old_issue;
+
+    UPDATE public.issue_votes
+    SET issue_id = p_issue_id
+    WHERE user_id = p_voter_id;
+
+    UPDATE public.jabar_issues
+    SET total_votes = total_votes + 1
+    WHERE id = p_issue_id;
+
+  END IF;
+
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

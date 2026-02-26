@@ -11,7 +11,6 @@ export const Dashboard = () => {
         const fetchData = async () => {
             const data = await getStatJabar();
             setStatJabar(data);
-            console.log("Fetched statJabar:", data);
         };
 
         fetchData();
@@ -19,24 +18,24 @@ export const Dashboard = () => {
 
     return (
         <BaseBox>
-            <h2 className="text-3xl font-black text-gray-900 mb-6">Dashboard Data Jawa Barat Tahun {statJabar ? statJabar.tahun : '...'}</h2>
+            <h2 className="text-3xl font-black text-gray-900 mb-6">Dashboard Data Jawa Barat Tahun {statJabar ? statJabar.tahun : '2025'}</h2>
             <div className="grid md:grid-cols-4 gap-6">
                 <StatCard
                     variant="red"
                     icon={faUsers}
-                    title={statJabar ? (statJabar.jml_penduduk / 1000000).toFixed(2) + " Juta" : '...'}
+                    title={statJabar ? (statJabar.jml_penduduk / 1000000).toFixed(2) + " Juta" : '50.76 Juta'}
                     description="Jumlah Penduduk"
                 />
                 <StatCard
                     variant="gray"
                     icon={faCity}
-                    title={statJabar ? (statJabar.jml_kabkota) : '...'}
+                    title={statJabar ? (statJabar.jml_kabkota) : '27'}
                     description="Kab/Kota"
                 />
                 <StatCard
                     variant="red"
                     icon={faChartLine}
-                    title={statJabar ? `${statJabar.pertumbuhan_ekonomi}%` : '...'}
+                    title={statJabar ? `${statJabar.pertumbuhan_ekonomi}%` : '5.20%'}
                     description="Pertumbuhan Ekonomi"
                 />
                 <StatCard

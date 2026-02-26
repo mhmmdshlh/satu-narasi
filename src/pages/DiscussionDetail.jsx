@@ -6,6 +6,7 @@ import { getDiscussion, getComments, toggleLike, getUserLike, createComment, upd
 import { CommentBox } from "../features/forum/CommentBox"
 import { useAuth } from "../contexts/AuthContext"
 import { CategoryTag } from "../components/CategoryTag"
+import { BackButton } from "../components/BackButton"
 
 export const DiscussionDetail = () => {
     const { id } = useParams();
@@ -173,13 +174,7 @@ export const DiscussionDetail = () => {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            {/* Back Button */}
-            <Link to="/forum" className="inline-flex items-center gap-2 text-red-500 hover:text-red-600 mb-6 font-semibold">
-                <FontAwesomeIcon icon={faArrowLeft} />
-                Back to Forum
-            </Link>
-
+        <div className="container mx-auto px-4 py-8 mt-18">
             {/* Discussion Content */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
                 {isEditing ? (
@@ -254,11 +249,41 @@ export const DiscussionDetail = () => {
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-3">
                                 <CategoryTag category={discussion.category} />
-                                {discussion.is_pinned && (
-                                    <span className="px-3 py-1 rounded-full text-sm font-bold bg-yellow-100 text-yellow-600">
-                                        📌 Pinned
-                                    </span>
-                                )}
+                            </div>
+                            <BackButton to="/forum" label="Back to Forum" />
+                        </div>
+
+                        <h1 className="text-3xl font-black text-gray-900 mb-4">{discussion.title}</h1>
+
+                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-6">
+                            <span className="font-semibold">
+                                By {discussion.author_username || discussion.author_full_name || 'Anonymous'}
+                            </span>
+                            <span>•</span>
+                            <span>{formatDate(discussion.created_at)}</span>
+                            <span>•</span>
+                            <span><FontAwesomeIcon icon={faEye} className="mr-1" />{discussion.views} views</span>
+                        </div>
+
+                        <div className="prose max-w-none mb-6">
+                            <p className="text-gray-800 whitespace-pre-wrap">{discussion.content}</p>
+                        </div>
+
+                        {/* Like Button */}
+                        <div className="flex items-center justify-between border-t pt-4">
+                            <div className="flex items-center gap-4">
+                                <button
+                                    onClick={handleLike}
+                                    className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition ${hasLiked
+                                        ? 'bg-red-500 text-white hover:bg-red-600'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
+                                    disabled={!user}
+                                >
+                                    <FontAwesomeIcon icon={faHeart} className={hasLiked ? 'text-white' : ''} />
+                                    {hasLiked ? 'Liked' : 'Like'}
+                                </button>
+                                <span className="font-bold text-lg text-gray-700">{discussion.likes_count || 0} likes</span>
                             </div>
 
                             {/* Edit/Delete Buttons - Only show if user is author */}
@@ -280,39 +305,6 @@ export const DiscussionDetail = () => {
                                     </button>
                                 </div>
                             )}
-                        </div>
-
-                        <h1 className="text-3xl font-black text-gray-900 mb-4">{discussion.title}</h1>
-
-                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-6">
-                            <span className="font-semibold">
-                                By {discussion.author_username || discussion.author_full_name || 'Anonymous'}
-                            </span>
-                            <span>•</span>
-                            <span>{formatDate(discussion.created_at)}</span>
-                            <span>•</span>
-                            <span><FontAwesomeIcon icon={faEye} className="mr-1" />{discussion.views} views</span>
-                        </div>
-
-                        <div className="prose max-w-none mb-6">
-                            <p className="text-gray-800 whitespace-pre-wrap">{discussion.content}</p>
-                        </div>
-
-                        {/* Like Button */}
-                        <div className="flex items-center gap-4 border-t pt-4">
-                            <button
-                                onClick={handleLike}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition ${
-                                    hasLiked
-                                        ? 'bg-red-500 text-white hover:bg-red-600'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                disabled={!user}
-                            >
-                                <FontAwesomeIcon icon={faHeart} className={hasLiked ? 'text-white' : ''} />
-                                {hasLiked ? 'Liked' : 'Like'}
-                            </button>
-                            <span className="font-bold text-lg text-gray-700">{discussion.likes_count || 0} likes</span>
                         </div>
                     </>
                 )}
