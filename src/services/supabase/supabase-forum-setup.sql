@@ -224,7 +224,8 @@ CREATE TABLE IF NOT EXISTS public.issue_votes (
 -- Enable RLS untuk jabar_issues
 ALTER TABLE public.jabar_issues ENABLE ROW LEVEL SECURITY;
 
-
+-- Enable RLS untuk issue_votes
+ALTER TABLE public.issue_votes ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Semua orang bisa lihat jabar_issues
 CREATE POLICY "Jabar issues are viewable by everyone"
@@ -237,6 +238,12 @@ CREATE POLICY "Authenticated users can vote on issues"
   ON public.issue_votes
   FOR INSERT
   WITH CHECK (auth.uid() = user_id);
+
+-- User hanya bisa lihat vote milik sendiri
+CREATE POLICY "Users can view own votes"
+  ON public.issue_votes
+  FOR SELECT
+  USING (auth.uid() = user_id);
 
 -- Function to update updated_at on issue_votes
 CREATE OR REPLACE FUNCTION public.handle_issue_vote_updated_at()
