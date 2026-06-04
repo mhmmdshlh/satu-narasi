@@ -94,7 +94,7 @@ export const getComments = async (discussionId) => {
         .from('comments')
         .select(`
             *,
-            author:profiles(username, full_name, avatar_url)
+            author:profiles(username, full_name)
         `)
         .eq('discussion_id', discussionId)
         .order('created_at', { ascending: true });

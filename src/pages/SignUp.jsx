@@ -173,7 +173,7 @@ export const SignUp = () => {
                                 type="text"
                                 name="username"
                                 id="username"
-                                placeholder="Username (huruf, angka, underscore, titik)"
+                                placeholder="Username (min. 3 characters)"
                                 autoComplete="username"
                                 className="w-full border border-gray-300 rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-red-500"
                                 value={username}

@@ -172,14 +172,13 @@ SELECT
   d.*,
   p.username AS author_username,
   p.full_name AS author_full_name,
-  p.avatar_url AS author_avatar,
   COUNT(DISTINCT dl.id) AS likes_count,
   COUNT(DISTINCT c.id) AS comment_count
 FROM public.discussions d
 LEFT JOIN public.profiles p ON d.author_id = p.id
 LEFT JOIN public.discussion_likes dl ON d.id = dl.discussion_id
 LEFT JOIN public.comments c ON d.id = c.discussion_id
-GROUP BY d.id, p.username, p.full_name, p.avatar_url;
+GROUP BY d.id, p.username, p.full_name;
 
 -- 12. Create function untuk increment views (hanya jika user belum pernah view)
 CREATE OR REPLACE FUNCTION increment_discussion_views(p_discussion_id UUID, p_viewer_id UUID)

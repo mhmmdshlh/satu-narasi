@@ -7,6 +7,10 @@ import { DiscussionDetail } from "./pages/DiscussionDetail";
 import MainLayout from "./layouts/MainLayout";
 import { Login } from "./pages/Login";
 import { SignUp } from "./pages/SignUp";
+import AdminLayout from "./layouts/AdminLayout";
+import { AdminDashboard } from "./pages/admin/AdminDashboard";
+import { AdminReports } from "./pages/admin/AdminReports";
+import { AdminDiscussions } from "./pages/admin/AdminDiscussions";
 
 export const router = createBrowserRouter([
     {
@@ -27,5 +31,14 @@ export const router = createBrowserRouter([
     {
         path: "signup",
         element: <SignUp />
-    }
-])
+    },
+    {
+        path: "admin",
+        element: <AdminLayout />,
+        children: [
+            { index: true, element: <AdminDashboard /> },
+            { path: "reports", element: <AdminReports /> },
+            { path: "discussions", element: <AdminDiscussions /> },
+        ],
+    },
+]);

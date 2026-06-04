@@ -42,7 +42,7 @@ export const DiscussionDetail = () => {
         try {
             const { data, error } = await supabase
                 .from('comments')
-                .select('*, author:profiles(username, full_name, avatar_url)')
+                .select('*, author:profiles(username, full_name)')
                 .eq('discussion_id', id)
                 .order('created_at', { ascending: true });
 

@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   username TEXT UNIQUE,
   full_name TEXT,
-  avatar_url TEXT,
-  bio TEXT,
+  email TEXT UNIQUE,
+  role TEXT DEFAULT 'warga' CHECK (role IN ('warga', 'admin', 'super_admin')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -40,12 +40,13 @@ CREATE POLICY "Users can insert own profile"
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, username, full_name, avatar_url)
+  INSERT INTO public.profiles (id, username, full_name, email, role)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1)),
     NEW.raw_user_meta_data->>'full_name',
-    NEW.raw_user_meta_data->>'avatar_url'
+    NEW.email,
+    'warga'
   );
   RETURN NEW;
 END;
@@ -76,6 +77,7 @@ CREATE TRIGGER on_profile_updated
 
 -- 8. Create index untuk performa
 CREATE INDEX IF NOT EXISTS profiles_username_idx ON public.profiles(username);
+CREATE INDEX IF NOT EXISTS profiles_email_idx ON public.profiles(email);
 
 -- ============================================
 -- SETUP SELESAI!

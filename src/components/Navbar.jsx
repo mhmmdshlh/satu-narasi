@@ -1,21 +1,10 @@
 import { NavLink, useNavigate } from "react-router-dom"
 import { Logo } from "./Logo.jsx"
-import { useEffect, useState } from "react"
-import { getProfile } from "../services/profile/profile.service.js"
 import { useAuth } from "../hooks/useAuth.js"
 
 export const Navbar = () => {
-    const { user, signOut } = useAuth();
+    const { user, profile, signOut } = useAuth();
     const navigate = useNavigate();
-    const [profile, setProfile] = useState(null);
-
-    useEffect(() => {
-        if (user) {
-            getProfile(user.id)
-                .then(setProfile)
-                .catch(console.error);
-        }
-    }, [user]);
 
     const handleLogout = async () => {
         const confirmed = window.confirm("Apakah kamu yakin ingin logout?");
@@ -34,6 +23,10 @@ export const Navbar = () => {
                 <NavLink to="/civiclab" className={({ isActive }) => `${isActive ? "text-red-500" : "text-white"} hover:text-red-500 font-semibold transition`}>CivicLab</NavLink>
                 <NavLink to="/akademi" className={({ isActive }) => `${isActive ? "text-red-500" : "text-white"} hover:text-red-500 font-semibold transition`}>Akademi</NavLink>
                 <NavLink to="/forum" className={({ isActive }) => `${isActive ? "text-red-500" : "text-white"} hover:text-red-500 font-semibold transition`}>Forum</NavLink>
+
+                {(profile?.role === "admin" || profile?.role === "super_admin") && (
+                    <NavLink to="/admin" className={({ isActive }) => `${isActive ? "text-red-500" : "text-white"} hover:text-red-500 font-semibold transition`}>Admin</NavLink>
+                )}
 
                 {user ? (
                     <div className="inline-flex items-center gap-3">
@@ -62,6 +55,9 @@ export const Navbar = () => {
                     <NavLink to="/civiclab" className={({ isActive }) => `${isActive ? "text-red-500" : "text-white"} block px-3 py-2 hover:bg-gray-700 rounded`}>CivicLab</NavLink>
                     <NavLink to="/akademi" className={({ isActive }) => `${isActive ? "text-red-500" : "text-white"} block px-3 py-2 hover:bg-gray-700 rounded`}>Akademi</NavLink>
                     <NavLink to="/forum" className={({ isActive }) => `${isActive ? "text-red-500" : "text-white"} block px-3 py-2 hover:bg-gray-700 rounded`}>Forum</NavLink>
+                    {(profile?.role === "admin" || profile?.role === "super_admin") && (
+                        <NavLink to="/admin" className={({ isActive }) => `${isActive ? "text-red-500" : "text-white"} block px-3 py-2 hover:bg-gray-700 rounded`}>Admin</NavLink>
+                    )}
                 </div>
             </div>
         </nav >
