@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faArrowLeft, faHeart, faEye, faComment, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons"
-import { getDiscussion, getComments, toggleLike, getUserLike, createComment, updateDiscussion, deleteDiscussion, incrementDiscussionViews } from "../services/forum/forum.service"
+import { faHeart, faEye, faComment, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons"
+import { getDiscussion, toggleLike, createComment, updateDiscussion, deleteDiscussion, incrementDiscussionViews } from "../services/forum/forum.service"
 import { CommentBox } from "../features/forum/CommentBox"
-import { useAuth } from "../contexts/AuthContext"
+import { useAuth } from "../hooks/useAuth"
 import { CategoryTag } from "../components/CategoryTag"
 import { BackButton } from "../components/BackButton"
+import { supabase } from "../services/supabase/client"
 
 export const DiscussionDetail = () => {
     const { id } = useParams();
@@ -23,21 +24,7 @@ export const DiscussionDetail = () => {
     const [editContent, setEditContent] = useState("");
     const [editCategory, setEditCategory] = useState("");
 
-    // Load data discussion, comments, dan user like status
-    useEffect(() => {
-        loadDiscussion();
-        loadComments();
-        if (user) loadUserLike();
-    }, [id, user]);
-
-    // Increment view - hanya 1x per user per discussion (ditrack di database)
-    useEffect(() => {
-        if (user) {
-            incrementDiscussionViews(id).catch(console.error);
-        }
-    }, [id, user]);
-
-    const loadDiscussion = async () => {
+    const loadDiscussion = useCallback(async () => {
         try {
             const data = await getDiscussion(id);
             setDiscussion(data);
@@ -49,26 +36,56 @@ export const DiscussionDetail = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id]);
 
-    const loadComments = async () => {
+    const loadComments = useCallback(async () => {
         try {
-            const data = await getComments(id);
+            const { data, error } = await supabase
+                .from('comments')
+                .select('*, author:profiles(username, full_name, avatar_url)')
+                .eq('discussion_id', id)
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
             setComments(data || []);
         } catch (error) {
             console.error("Error loading comments:", error);
             setComments([]);
         }
-    };
+    }, [id]);
 
-    const loadUserLike = async () => {
+    const loadUserLike = useCallback(async () => {
         try {
-            const liked = await getUserLike(id);
-            setHasLiked(liked);
+            if (!user) {
+                setHasLiked(false);
+                return;
+            }
+            const { data, error } = await supabase
+                .from('discussion_likes')
+                .select('id')
+                .eq('discussion_id', id)
+                .eq('user_id', user.id)
+                .maybeSingle();
+
+            if (error) throw error;
+            setHasLiked(!!data);
         } catch (error) {
             console.error("Error loading user like:", error);
+            setHasLiked(false);
         }
-    };
+    }, [id, user]);
+
+    useEffect(() => {
+        loadDiscussion();
+        loadComments();
+        loadUserLike();
+    }, [id, loadDiscussion, loadComments, loadUserLike]);
+
+    useEffect(() => {
+        if (user) {
+            incrementDiscussionViews(id).catch(console.error);
+        }
+    }, [id, user]);
 
     const handleLike = async () => {
         if (!user) {

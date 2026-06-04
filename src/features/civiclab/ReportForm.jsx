@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { BaseBox } from "../../components/BaseBox";
 import { getUserReports, submitReport } from "../../services/civiclab/report.service";
 
@@ -35,18 +35,17 @@ export const ReportForm = () => {
     const [reports, setReports] = useState([]);
     const fileInputRef = useRef(null);
 
-    const loadReports = async () => {
-        if (!user) return;
-        try {
-            const data = await getUserReports();
-            setReports(data);
-        } catch (err) {
-            console.error("Gagal memuat laporan:", err);
-        }
-    };
-
     useEffect(() => {
-        loadReports();
+        const fetch = async () => {
+            if (!user) return;
+            try {
+                const data = await getUserReports();
+                setReports(data);
+            } catch (err) {
+                console.error("Gagal memuat laporan:", err);
+            }
+        };
+        fetch();
     }, [user]);
 
     const handleImageChange = (e) => {
@@ -83,7 +82,8 @@ export const ReportForm = () => {
             await submitReport({ title, description, category, location, imageFile });
             setSuccess(true);
             resetForm();
-            await loadReports();
+            const updatedReports = await getUserReports();
+            setReports(updatedReports);
         } catch (err) {
             setError(err.message);
         } finally {

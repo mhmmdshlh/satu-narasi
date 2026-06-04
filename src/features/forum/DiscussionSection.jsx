@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useAuth } from "../../contexts/AuthContext"
+import { useAuth } from "../../hooks/useAuth"
 import { getDiscussions } from "../../services/forum/forum.service"
 import { DiscussionForm } from "./DiscussionForm"
 import { DiscussionCard } from "./DiscussionCard"

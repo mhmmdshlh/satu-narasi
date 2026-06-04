@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { BaseBox } from "../../components/BaseBox";
 import { SurveyItem } from "./SurveyItem";
 import { getIssues, getUserVote, handleVoteCount } from "../../services/forum/forum.service";
@@ -10,23 +10,21 @@ export const SurveyForm = () => {
     const [selectedIssueId, setSelectedIssueId] = useState(null);
     const [error, setError] = useState(null);
 
-    // Fetch issues + user's current vote
-    const loadData = async () => {
-        try {
-            const [issuesData, userVote] = await Promise.all([
-                getIssues(),
-                user ? getUserVote() : null,
-            ]);
-            setIssues(issuesData);
-            setSelectedIssueId(userVote);
-        } catch (err) {
-            setError("Gagal memuat data survei.");
-            console.error(err);
-        }
-    };
-
     useEffect(() => {
-        loadData();
+        const fetch = async () => {
+            try {
+                const [issuesData, userVote] = await Promise.all([
+                    getIssues(),
+                    user ? getUserVote() : null,
+                ]);
+                setIssues(issuesData);
+                setSelectedIssueId(userVote);
+            } catch (err) {
+                setError("Gagal memuat data survei.");
+                console.error(err);
+            }
+        };
+        fetch();
     }, [user]);
 
     const handleVote = async (issueId) => {

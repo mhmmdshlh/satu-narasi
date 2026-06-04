@@ -1,8 +1,8 @@
 import { NavLink, useNavigate } from "react-router-dom"
 import { Logo } from "./Logo.jsx"
-import { useAuth } from "../contexts/AuthContext.jsx"
 import { useEffect, useState } from "react"
 import { getProfile } from "../services/profile/profile.service.js"
+import { useAuth } from "../hooks/useAuth.js"
 
 export const Navbar = () => {
     const { user, signOut } = useAuth();
@@ -11,16 +11,15 @@ export const Navbar = () => {
 
     useEffect(() => {
         if (user) {
-            // Fetch profile data saat user login
             getProfile(user.id)
                 .then(setProfile)
                 .catch(console.error);
-        } else {
-            setProfile(null);
         }
     }, [user]);
 
     const handleLogout = async () => {
+        const confirmed = window.confirm("Apakah kamu yakin ingin logout?");
+        if (!confirmed) return;
         await signOut();
         navigate("/");
     };

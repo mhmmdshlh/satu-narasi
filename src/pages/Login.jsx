@@ -1,15 +1,19 @@
 import { LoginLayout } from "../layouts/LoginLayout"
 import { Link, useNavigate } from "react-router-dom"
 import { useState } from "react"
-import { signInWithEmail, signInWithGoogle } from "../services/auth/auth.service"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons"
+import { signInWithEmail, translateAuthError } from "../services/auth/auth.service"
 import { BackButton } from "../components/BackButton"
 
 export const Login = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [remember, setRemember] = useState(true);
 
     const handleEmailLogin = async (e) => {
         e.preventDefault();
@@ -17,24 +21,11 @@ export const Login = () => {
         setLoading(true);
 
         try {
-            await signInWithEmail(email, password);
-            navigate("/"); // Redirect ke home setelah berhasil login
+            await signInWithEmail(email, password, remember);
+            navigate("/");
         } catch (err) {
-            setError(err.message || "Failed to sign in");
+            setError(translateAuthError(err));
         } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleGoogleLogin = async () => {
-        setError("");
-        setLoading(true);
-
-        try {
-            await signInWithGoogle();
-            // Redirect akan dilakukan otomatis oleh Supabase
-        } catch (err) {
-            setError(err.message || "Failed to sign in with Google");
             setLoading(false);
         }
     };
@@ -69,24 +60,34 @@ export const Login = () => {
                             required
                             disabled={loading}
                         />
-                        <input
-                            type="password"
-                            name="password"
-                            id="password"
-                            placeholder="Password"
-                            autoComplete="current-password"
-                            className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            disabled={loading}
-                        />
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                id="password"
+                                placeholder="Password"
+                                autoComplete="current-password"
+                                className="w-full border border-gray-300 rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                disabled={loading}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                                tabIndex={-1}
+                            >
+                                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                            </button>
+                        </div>
                         <div className="flex justify-between items-center px-1">
                             <div>
-                                <input type="checkbox" name="remember" id="remember" className="mr-2" />
+                                <input type="checkbox" name="remember" id="remember" className="mr-2" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
                                 <label htmlFor="remember" className="text-sm">Keep me sign in</label>
                             </div>
-                            <a href="#" className="text-sm font-bold text-red-500 hover:underline">FORGOT PASSWORD?</a>
+                            {/* <a href="#" className="text-sm font-bold text-red-500 hover:underline">FORGOT PASSWORD?</a> */}
                         </div>
                         <button
                             type="submit"

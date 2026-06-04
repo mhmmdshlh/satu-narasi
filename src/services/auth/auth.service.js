@@ -1,13 +1,31 @@
 import { supabase } from "../supabase/client";
 
+const authErrorMap = {
+    "Invalid login credentials": "Email atau password salah. Silakan coba lagi.",
+    "Email not confirmed": "Email belum diverifikasi. Cek kotak masuk email kamu.",
+    "User already registered": "Email sudah terdaftar. Silakan login atau gunakan email lain.",
+    "Password should be at least 6 characters": "Password minimal 6 karakter.",
+    "Invalid email": "Format email tidak valid.",
+    "Email rate limit exceeded": "Terlalu banyak percobaan. Tunggu beberapa saat dan coba lagi.",
+    "Token has expired or is invalid": "Sesi berakhir. Silakan login ulang.",
+};
+
+export const translateAuthError = (error) => {
+    const msg = error?.message || error || "Terjadi kesalahan. Silakan coba lagi.";
+    return authErrorMap[msg] || msg;
+};
+
 // Login dengan email dan password
-export const signInWithEmail = async (email, password) => {
+export const signInWithEmail = async (email, password, remember = true) => {
+    sessionStorage.setItem('sb-remember', remember ? 'true' : 'false');
+
     const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
     });
 
     if (error) {
+        sessionStorage.removeItem('sb-remember');
         throw error;
     }
 

@@ -46,6 +46,18 @@ export const updateProfile = async (userId, updates) => {
     return data;
 };
 
+// Check if username is available
+export const checkUsernameAvailable = async (username) => {
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username)
+        .maybeSingle();
+
+    if (error) throw error;
+    return !data;
+};
+
 // Get all profiles (untuk user list, forum, dll)
 export const getAllProfiles = async () => {
     const { data, error } = await supabase
