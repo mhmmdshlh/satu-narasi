@@ -29,8 +29,8 @@ export const Dashboard = () => {
     return (
         <>
             <BaseBox>
-                <h2 className="text-3xl font-black text-gray-900 mb-6">Dashboard Data Jawa Barat Tahun {statJabar ? statJabar.tahun : '2025'}</h2>
-                <div className="grid md:grid-cols-4 gap-6 items-center">
+                <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-4 sm:mb-6">Dashboard Jabar Tahun {statJabar ? statJabar.tahun : '2025'}</h2>
+                <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                     <StatCard
                         variant="red"
                         icon={faUsers}
@@ -51,8 +51,8 @@ export const Dashboard = () => {
                     />
                     <BaseCard variant="gray" onClick={() => setShowModal(true)} clickable>
                         <div className="flex items-center gap-3">
-                            <FontAwesomeIcon icon={faFileAlt} className="mb-2 text-3xl text-gray-600" />
-                            <h3 className="font-black text-gray-900 text-2xl">{totalReports}</h3>
+                            <FontAwesomeIcon icon={faFileAlt} className="mb-2 text-2xl sm:text-3xl text-gray-600" />
+                            <h3 className="font-black text-gray-900 text-xl sm:text-2xl">{totalReports}</h3>
                         </div>
                         <p className="text-base text-gray-700 font-medium">Laporan Disetujui</p>
                         <p className="text-xs text-gray-400 mt-2">Klik untuk lihat detail</p>

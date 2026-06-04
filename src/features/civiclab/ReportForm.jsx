@@ -93,7 +93,7 @@ export const ReportForm = () => {
 
     return (
         <BaseBox>
-            <h2 className="text-3xl font-black text-gray-900 mb-6">Forum Laporan Warga</h2>
+            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-6">Forum Laporan Warga</h2>
 
             {/* Form hanya untuk user yang login */}
             {!user ? (
@@ -187,7 +187,7 @@ export const ReportForm = () => {
                     <button
                         type="submit"
                         disabled={submitting}
-                        className="bg-red-500 text-white px-8 py-3 rounded-lg font-bold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full md:w-auto bg-red-500 text-white px-8 py-3 rounded-lg font-bold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {submitting ? "Mengirim..." : "Kirim Laporan"}
                     </button>
@@ -197,7 +197,7 @@ export const ReportForm = () => {
             {/* Daftar laporan milik user */}
             {user && reports.length > 0 && (
                 <div>
-                    <h3 className="text-xl font-black text-gray-800 mb-4">Laporan Kamu</h3>
+                    <h3 className="text-lg sm:text-xl font-black text-gray-800 mb-4">Laporan Kamu</h3>
                     <div className="space-y-4">
                         {reports.map((report) => {
                             const status = STATUS_LABEL[report.status] ?? STATUS_LABEL.pending;

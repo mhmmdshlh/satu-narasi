@@ -191,9 +191,9 @@ export const DiscussionDetail = () => {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8 mt-18">
+        <div className="container mx-auto px-4 py-8 mt-16">
             {/* Discussion Content */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8 mb-6">
                 {isEditing ? (
                     /* Edit Form */
                     <form onSubmit={handleEditDiscussion}>
@@ -238,10 +238,10 @@ export const DiscussionDetail = () => {
                                 />
                             </div>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                             <button
                                 type="submit"
-                                className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50"
+                                className="w-full sm:w-auto bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50"
                                 disabled={submitting}
                             >
                                 {submitting ? "Saving..." : "Save Changes"}
@@ -254,7 +254,7 @@ export const DiscussionDetail = () => {
                                     setEditContent(discussion.content);
                                     setEditCategory(discussion.category);
                                 }}
-                                className="px-6 py-2 border border-gray-300 rounded-lg font-semibold hover:bg-gray-100 transition"
+                                className="w-full sm:w-auto px-6 py-2 border border-gray-300 rounded-lg font-semibold hover:bg-gray-100 transition"
                                 disabled={submitting}
                             >
                                 Cancel
@@ -270,14 +270,14 @@ export const DiscussionDetail = () => {
                             <BackButton to="/forum" label="Back to Forum" />
                         </div>
 
-                        <h1 className="text-3xl font-black text-gray-900 mb-4">{discussion.title}</h1>
+                        <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-4">{discussion.title}</h1>
 
-                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-6">
+                        <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-4 text-sm text-gray-600 mb-6">
                             <span className="font-semibold">
                                 By {discussion.author_username || discussion.author_full_name || 'Anonymous'}
                             </span>
-                            <span>•</span>
-                            <span>{formatDate(discussion.created_at)}</span>
+                            <span className="hidden sm:inline">•</span>
+                            <span className="w-full sm:w-auto">{formatDate(discussion.created_at)}</span>
                             <span>•</span>
                             <span><FontAwesomeIcon icon={faEye} className="mr-1" />{discussion.views} views</span>
                         </div>
@@ -287,11 +287,11 @@ export const DiscussionDetail = () => {
                         </div>
 
                         {/* Like Button */}
-                        <div className="flex items-center justify-between border-t pt-4">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t pt-4">
                             <div className="flex items-center gap-4">
                                 <button
                                     onClick={handleLike}
-                                    className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition ${hasLiked
+                                    className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition ${hasLiked
                                         ? 'bg-red-500 text-white hover:bg-red-600'
                                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                         }`}
@@ -300,7 +300,7 @@ export const DiscussionDetail = () => {
                                     <FontAwesomeIcon icon={faHeart} className={hasLiked ? 'text-white' : ''} />
                                     {hasLiked ? 'Liked' : 'Like'}
                                 </button>
-                                <span className="font-bold text-lg text-gray-700">{discussion.likes_count || 0} likes</span>
+                                <span className="font-bold text-base sm:text-lg text-gray-700">{discussion.likes_count || 0} likes</span>
                             </div>
 
                             {/* Edit/Delete Buttons - Only show if user is author */}
@@ -328,8 +328,8 @@ export const DiscussionDetail = () => {
             </div>
 
             {/* Comments Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8">
-                <h3 className="text-2xl font-black text-gray-900 mb-6">
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8">
+                <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-6">
                     <FontAwesomeIcon icon={faComment} className="mr-2" />
                     {comments.length} Comments
                 </h3>
@@ -348,7 +348,7 @@ export const DiscussionDetail = () => {
                             />
                             <button
                                 type="submit"
-                                className="mt-3 bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50"
+                                className="w-full sm:w-auto mt-3 bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50"
                                 disabled={submitting || !commentText.trim()}
                             >
                                 {submitting ? "Posting..." : "Post Comment"}

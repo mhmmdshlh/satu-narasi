@@ -37,7 +37,7 @@ export const ReportsModal = ({ onClose }) => {
                     <h3 className="text-xl font-black text-gray-900">Laporan Warga Disetujui</h3>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 transition text-2xl leading-none"
+                        className="text-gray-400 hover:text-gray-600 transition text-3xl leading-none p-1"
                     >
                         &times;
                     </button>
@@ -70,7 +70,7 @@ export const ReportsModal = ({ onClose }) => {
                                     <img
                                         src={report.image_url}
                                         alt="Foto laporan"
-                                        className="mt-3 h-30 object-cover rounded-lg border border-gray-200"
+                                        className="mt-3 h-32 object-cover rounded-lg border border-gray-200"
                                     />
                                 )}
                                 <p className="text-xs text-gray-400 mt-2">

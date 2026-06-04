@@ -25,7 +25,7 @@ export const DiscussionCard = ({ discussion }) => {
 
     return (
         <Link to={`/forum/${discussion.id}`}>
-            <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition p-6">
+            <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition p-4 sm:p-6">
                 <div className="flex items-start justify-between">
                     <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3 text-sm">
@@ -43,10 +43,10 @@ export const DiscussionCard = ({ discussion }) => {
                             </div>
                             <CategoryTag category={discussion.category} />
                         </div>
-                        <h4 className="text-xl font-black text-gray-900 mb-2">{discussion.title}</h4>
-                        <p className="text-gray-700 mb-3">{excerpt}</p>
+                        <h4 className="text-base sm:text-xl font-black text-gray-900 mb-2">{discussion.title}</h4>
+                        <p className="text-sm sm:text-base text-gray-700 mb-3">{excerpt}</p>
 
-                        <div className="flex items-center gap-6 text-gray-600 font-semibold text-sm">
+                        <div className="flex items-center gap-4 sm:gap-6 text-gray-600 font-semibold text-sm">
                             <span>
                                 <FontAwesomeIcon icon={faHeart} className="mr-2" />
                                 {discussion.likes_count || 0} Likes

@@ -34,8 +34,8 @@ export const DiscussionForm = ({ onSuccess, onCancel }) => {
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h3 className="text-xl font-bold mb-4">Create New Discussion</h3>
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-6">
+            <h3 className="text-lg sm:text-xl font-bold mb-4">Create New Discussion</h3>
 
             {error && (
                 <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
@@ -98,10 +98,10 @@ export const DiscussionForm = ({ onSuccess, onCancel }) => {
                         />
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                         <button
                             type="submit"
-                            className="flex-1 bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full sm:flex-1 bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={loading}
                         >
                             {loading ? "Creating..." : "Create Discussion"}
@@ -109,7 +109,7 @@ export const DiscussionForm = ({ onSuccess, onCancel }) => {
                         <button
                             type="button"
                             onClick={onCancel}
-                            className="px-6 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-100 transition"
+                            className="w-full sm:flex-1 px-6 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-100 transition"
                             disabled={loading}
                         >
                             Cancel

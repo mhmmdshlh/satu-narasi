@@ -67,7 +67,7 @@ export const AdminDiscussions = () => {
 
     return (
         <div>
-            <h1 className="text-3xl font-black text-gray-900 mb-6">Forum &mdash; Semua Diskusi</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-6">Forum &mdash; Semua Diskusi</h1>
 
             {discussions.length === 0 ? (
                 <p className="text-gray-500">Belum ada diskusi.</p>
@@ -75,29 +75,29 @@ export const AdminDiscussions = () => {
                 <div className="space-y-4">
                     {discussions.map((disc) => (
                         <div key={disc.id} className="bg-white rounded-xl shadow">
-                            <div className="p-6 flex items-start justify-between">
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="font-bold text-gray-900 truncate">{disc.title}</h3>
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        {disc.category} &middot; Oleh: {disc.author_username || "Anonim"} &middot; {disc.likes_count || 0} likes &middot; {disc.comment_count || 0} komentar &middot; {disc.views || 0} views
+                            <div className="p-4 sm:p-6 flex flex-col sm:flex-row items-start justify-between gap-3">
+                                <div className="flex-1 min-w-0 w-full sm:w-auto">
+                                    <h3 className="font-bold text-gray-900 text-base sm:text-lg truncate">{disc.title}</h3>
+                                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                                        {disc.category} &middot; Oleh: {disc.author_username || "Anonim"} &middot; {disc.likes_count || 0} likes &middot; {disc.comment_count || 0} komentar
                                     </p>
-                                    <p className="text-gray-600 text-sm mt-2 line-clamp-1">{disc.content}</p>
+                                    <p className="text-xs sm:text-sm text-gray-600 mt-2 line-clamp-1">{disc.content}</p>
                                 </div>
-                                <div className="flex gap-2 ml-4 shrink-0">
+                                <div className="flex gap-2 w-full sm:w-auto sm:ml-4 shrink-0">
                                     <button onClick={() => handleViewComments(disc.id)}
-                                        className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition cursor-pointer">
+                                        className="flex-1 sm:flex-none px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition cursor-pointer">
                                         Komentar
                                     </button>
                                     <button onClick={() => handleDeleteDiscussion(disc.id)}
-                                        className="px-3 py-1.5 text-sm bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition cursor-pointer">
+                                        className="flex-1 sm:flex-none px-3 py-1.5 text-sm bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition cursor-pointer">
                                         Hapus
                                     </button>
                                 </div>
                             </div>
 
                             {expanded === disc.id && (
-                                <div className="border-t border-gray-100 p-6 space-y-3">
-                                    <h4 className="font-bold text-gray-700">Komentar ({comments.length})</h4>
+                                <div className="border-t border-gray-100 p-4 sm:p-6 space-y-3">
+                                    <h4 className="font-bold text-gray-700 text-sm sm:text-base">Komentar ({comments.length})</h4>
                                     {comments.length === 0 ? (
                                         <p className="text-sm text-gray-500">Belum ada komentar.</p>
                                     ) : (

@@ -60,8 +60,8 @@ export const SurveyForm = () => {
 
     return (
         <BaseBox>
-            <h2 className="text-3xl font-black text-gray-900 mb-4">Survei Prioritas Isu Jabar</h2>
-            <p className="text-gray-700 mb-6 text-lg">
+            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-4">Survei Prioritas Isu Jabar</h2>
+            <p className="text-gray-700 mb-6 text-base sm:text-lg">
                 Bantu kami memahami isu apa yang paling penting menurut Anda untuk Jawa Barat
             </p>
 

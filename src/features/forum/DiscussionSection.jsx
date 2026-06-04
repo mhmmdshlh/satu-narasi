@@ -37,7 +37,7 @@ export const DiscussionSection = () => {
             {user && (
                 <div className="mb-6">
                     {!showForm ? (
-                        <Btn text="+ Create New Discussion" onClick={() => setShowForm(true)} color="bg-red-500 hover:bg-red-600 py-3" />
+                        <Btn text="+ Create New Discussion" onClick={() => setShowForm(true)} color="bg-red-500 hover:bg-red-600" size="lg" className="w-full sm:w-auto" />
                     ) : (
                         <DiscussionForm
                             onSuccess={handleDiscussionCreated}

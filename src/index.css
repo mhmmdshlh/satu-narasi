@@ -6,9 +6,25 @@
   --background-image-red-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
+@layer utilities {
+  .animate-slide-down {
+    animation: slideDown 0.2s ease-out;
+  }
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 2rem;
+  scroll-padding-top: 4rem;
 }
 
 body {
