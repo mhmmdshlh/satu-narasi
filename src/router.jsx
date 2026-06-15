@@ -11,6 +11,7 @@ import AdminLayout from "./layouts/AdminLayout";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
 import { AdminReports } from "./pages/admin/AdminReports";
 import { AdminDiscussions } from "./pages/admin/AdminDiscussions";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export const router = createBrowserRouter([
     {
@@ -34,7 +35,7 @@ export const router = createBrowserRouter([
     },
     {
         path: "admin",
-        element: <AdminLayout />,
+        element: <ProtectedRoute allowedRoles={['admin', 'super_admin']}><AdminLayout /></ProtectedRoute>,
         children: [
             { index: true, element: <AdminDashboard /> },
             { path: "reports", element: <AdminReports /> },
