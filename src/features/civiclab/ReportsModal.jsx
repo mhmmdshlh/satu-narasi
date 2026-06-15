@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getApprovedReports } from "../../services/civiclab/report.service";
 
 const CATEGORY_LABEL = {
@@ -11,17 +11,11 @@ const CATEGORY_LABEL = {
 };
 
 export const ReportsModal = ({ onClose }) => {
-    const [reports, setReports] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { data: reports = [], isLoading } = useQuery({
+        queryKey: ['civiclab', 'approvedReports'],
+        queryFn: getApprovedReports,
+    });
 
-    useEffect(() => {
-        getApprovedReports()
-            .then(setReports)
-            .catch(console.error)
-            .finally(() => setLoading(false));
-    }, []);
-
-    // Tutup modal saat klik backdrop
     const handleBackdropClick = (e) => {
         if (e.target === e.currentTarget) onClose();
     };
@@ -32,7 +26,6 @@ export const ReportsModal = ({ onClose }) => {
             onClick={handleBackdropClick}
         >
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
-                {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                     <h3 className="text-xl font-black text-gray-900">Laporan Warga Disetujui</h3>
                     <button
@@ -43,9 +36,8 @@ export const ReportsModal = ({ onClose }) => {
                     </button>
                 </div>
 
-                {/* Content */}
                 <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
-                    {loading ? (
+                    {isLoading ? (
                         <p className="text-gray-500 text-sm text-center py-8">Memuat laporan...</p>
                     ) : reports.length === 0 ? (
                         <p className="text-gray-500 text-sm text-center py-8">Belum ada laporan yang disetujui.</p>
@@ -56,7 +48,7 @@ export const ReportsModal = ({ onClose }) => {
                                     <div>
                                         <h4 className="font-bold text-gray-900">{report.title}</h4>
                                         <p className="text-xs text-gray-500 mt-0.5">
-                                            {CATEGORY_LABEL[report.category] ?? report.category} · {report.location}
+                                            {CATEGORY_LABEL[report.category] ?? report.category} &middot; {report.location}
                                         </p>
                                     </div>
                                     <span className="text-xs text-gray-400 whitespace-nowrap">

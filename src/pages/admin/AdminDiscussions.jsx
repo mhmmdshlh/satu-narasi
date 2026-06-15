@@ -1,67 +1,59 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { getAllDiscussions, getAllComments } from "../../services/admin/admin.service"
 import { deleteDiscussion } from "../../services/forum/forum.service"
 import { deleteComment } from "../../services/forum/forum.service"
 
 export const AdminDiscussions = () => {
-    const [discussions, setDiscussions] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [expanded, setExpanded] = useState(null);
-    const [comments, setComments] = useState([]);
+    const queryClient = useQueryClient();
 
-    const loadDiscussions = async () => {
-        try {
-            const data = await getAllDiscussions();
-            setDiscussions(data);
-        } catch {
-            console.error("Gagal memuat diskusi");
-        } finally {
-            setLoading(false);
-        }
-    };
+    const { data: discussions = [], isLoading } = useQuery({
+        queryKey: ['admin', 'discussions'],
+        queryFn: getAllDiscussions,
+    });
 
-    useEffect(() => {
-        loadDiscussions();
-    }, []);
+    const { data: comments = [] } = useQuery({
+        queryKey: ['admin', 'comments', expanded],
+        queryFn: () => getAllComments(expanded),
+        enabled: !!expanded,
+    });
 
-    const handleDeleteDiscussion = async (id) => {
+    const deleteDiscussionMutation = useMutation({
+        mutationFn: deleteDiscussion,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin', 'discussions'] });
+        },
+        onError: () => alert("Gagal menghapus diskusi."),
+    });
+
+    const deleteCommentMutation = useMutation({
+        mutationFn: deleteComment,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin', 'comments', expanded] });
+        },
+        onError: () => alert("Gagal menghapus komentar."),
+    });
+
+    const handleDeleteDiscussion = (id) => {
         if (!window.confirm("Hapus diskusi ini? Semua komentar juga akan terhapus.")) return;
-        try {
-            await deleteDiscussion(id);
-            setDiscussions(prev => prev.filter(d => d.id !== id));
-        } catch {
-            alert("Gagal menghapus diskusi.");
-        }
+        deleteDiscussionMutation.mutate(id);
     };
 
-    const handleViewComments = async (discussionId) => {
+    const handleViewComments = (discussionId) => {
         if (expanded === discussionId) {
             setExpanded(null);
             return;
         }
-        try {
-            const data = await getAllComments(discussionId);
-            setComments(data);
-            setExpanded(discussionId);
-        } catch {
-            console.error("Gagal memuat komentar");
-        }
+        setExpanded(discussionId);
     };
 
-    const handleDeleteComment = async (id) => {
+    const handleDeleteComment = (id) => {
         if (!window.confirm("Hapus komentar ini?")) return;
-        try {
-            await deleteComment(id);
-            if (expanded) {
-                const data = await getAllComments(expanded);
-                setComments(data);
-            }
-        } catch {
-            alert("Gagal menghapus komentar.");
-        }
+        deleteCommentMutation.mutate(id);
     };
 
-    if (loading) {
+    if (isLoading) {
         return <p className="text-gray-600">Memuat data...</p>;
     }
 

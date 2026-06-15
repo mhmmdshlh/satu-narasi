@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../hooks/useAuth";
 import { BaseBox } from "../../components/BaseBox";
 import { getUserReports, submitReport } from "../../services/civiclab/report.service";
@@ -20,6 +21,7 @@ const CATEGORIES = [
 
 export const ReportForm = () => {
     const { user } = useAuth();
+    const queryClient = useQueryClient();
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -28,25 +30,15 @@ export const ReportForm = () => {
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
 
-    const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
-
-    const [reports, setReports] = useState([]);
     const fileInputRef = useRef(null);
 
-    useEffect(() => {
-        const fetch = async () => {
-            if (!user) return;
-            try {
-                const data = await getUserReports();
-                setReports(data);
-            } catch (err) {
-                console.error("Gagal memuat laporan:", err);
-            }
-        };
-        fetch();
-    }, [user]);
+    const { data: reports = [] } = useQuery({
+        queryKey: ['civiclab', 'userReports'],
+        queryFn: getUserReports,
+        enabled: !!user,
+    });
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -73,29 +65,29 @@ export const ReportForm = () => {
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
-    const handleSubmit = async (e) => {
+    const submitMutation = useMutation({
+        mutationFn: () => submitReport({ title, description, category, location, imageFile }),
+        onSuccess: () => {
+            setSuccess(true);
+            resetForm();
+            queryClient.invalidateQueries({ queryKey: ['civiclab', 'userReports'] });
+        },
+        onError: (err) => {
+            setError(err.message);
+        },
+    });
+
+    const handleSubmit = (e) => {
         e.preventDefault();
         setError(null);
         setSuccess(false);
-        setSubmitting(true);
-        try {
-            await submitReport({ title, description, category, location, imageFile });
-            setSuccess(true);
-            resetForm();
-            const updatedReports = await getUserReports();
-            setReports(updatedReports);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setSubmitting(false);
-        }
+        submitMutation.mutate();
     };
 
     return (
         <BaseBox>
             <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-6">Forum Laporan Warga</h2>
 
-            {/* Form hanya untuk user yang login */}
             {!user ? (
                 <div className="p-5 rounded-xl border-2 border-dashed border-gray-300 text-center text-gray-500 mb-8">
                     <p className="font-semibold mb-1">Login untuk mengirim laporan</p>
@@ -124,7 +116,7 @@ export const ReportForm = () => {
                                 placeholder="Contoh: Jalan Berlubang"
                                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-red-500 transition"
                                 required
-                                disabled={submitting}
+                                disabled={submitMutation.isPending}
                             />
                         </div>
                         <div>
@@ -134,7 +126,7 @@ export const ReportForm = () => {
                                 onChange={(e) => setCategory(e.target.value)}
                                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-red-500 transition"
                                 required
-                                disabled={submitting}
+                                disabled={submitMutation.isPending}
                             >
                                 <option value="">Pilih Kategori</option>
                                 {CATEGORIES.map((c) => (
@@ -151,7 +143,7 @@ export const ReportForm = () => {
                                 placeholder="RT/RW, Blok, Desa, Kec, Kab/Kota"
                                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-red-500 transition"
                                 required
-                                disabled={submitting}
+                                disabled={submitMutation.isPending}
                             />
                         </div>
                         <div className="md:col-span-2">
@@ -163,7 +155,7 @@ export const ReportForm = () => {
                                 rows="4"
                                 placeholder="Jelaskan detail isu yang kamu laporkan..."
                                 required
-                                disabled={submitting}
+                                disabled={submitMutation.isPending}
                             />
                         </div>
                         <div className="md:col-span-2">
@@ -176,7 +168,7 @@ export const ReportForm = () => {
                                 ref={fileInputRef}
                                 onChange={handleImageChange}
                                 className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-red-50 file:text-red-600 hover:file:bg-red-100 cursor-pointer"
-                                disabled={submitting}
+                                disabled={submitMutation.isPending}
                             />
                             {imagePreview && (
                                 <img src={imagePreview} alt="Preview" className="mt-3 h-40 rounded-lg object-cover border border-gray-200" />
@@ -186,15 +178,14 @@ export const ReportForm = () => {
 
                     <button
                         type="submit"
-                        disabled={submitting}
+                        disabled={submitMutation.isPending}
                         className="w-full md:w-auto bg-red-500 text-white px-8 py-3 rounded-lg font-bold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {submitting ? "Mengirim..." : "Kirim Laporan"}
+                        {submitMutation.isPending ? "Mengirim..." : "Kirim Laporan"}
                     </button>
                 </form>
             )}
 
-            {/* Daftar laporan milik user */}
             {user && reports.length > 0 && (
                 <div>
                     <h3 className="text-lg sm:text-xl font-black text-gray-800 mb-4">Laporan Kamu</h3>
@@ -207,7 +198,7 @@ export const ReportForm = () => {
                                         <div>
                                             <h4 className="font-bold text-gray-900">{report.title}</h4>
                                             <p className="text-sm text-gray-500 mt-1">
-                                                {report.category} · {report.location}
+                                                {report.category} &middot; {report.location}
                                             </p>
                                         </div>
                                         <span className={`text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap ${status.cls}`}>
@@ -230,4 +221,3 @@ export const ReportForm = () => {
         </BaseBox>
     );
 };
-

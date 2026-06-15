@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../hooks/useAuth";
 import { BaseBox } from "../../components/BaseBox";
 import { SurveyItem } from "./SurveyItem";
@@ -6,56 +7,71 @@ import { getIssues, getUserVote, handleVoteCount } from "../../services/forum/fo
 
 export const SurveyForm = () => {
     const { user } = useAuth();
-    const [issues, setIssues] = useState([]);
-    const [selectedIssueId, setSelectedIssueId] = useState(null);
+    const queryClient = useQueryClient();
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetch = async () => {
-            try {
-                const [issuesData, userVote] = await Promise.all([
-                    getIssues(),
-                    user ? getUserVote() : null,
-                ]);
-                setIssues(issuesData);
-                setSelectedIssueId(userVote);
-            } catch (err) {
-                setError("Gagal memuat data survei.");
-                console.error(err);
-            }
-        };
-        fetch();
-    }, [user]);
+    const { data: issues = [] } = useQuery({
+        queryKey: ['issues'],
+        queryFn: getIssues,
+    });
 
-    const handleVote = async (issueId) => {
+    const { data: selectedIssueId = null } = useQuery({
+        queryKey: ['userVote'],
+        queryFn: getUserVote,
+        enabled: !!user,
+    });
+
+    const voteMutation = useMutation({
+        mutationFn: (issueId) => handleVoteCount(issueId),
+        onMutate: async (issueId) => {
+            await queryClient.cancelQueries({ queryKey: ['issues'] });
+            await queryClient.cancelQueries({ queryKey: ['userVote'] });
+
+            const previousIssues = queryClient.getQueryData(['issues']);
+            const previousVote = queryClient.getQueryData(['userVote']);
+
+            queryClient.setQueryData(['issues'], (old = []) =>
+                old.map(issue => {
+                    if (issue.id === issueId && previousVote !== issueId) {
+                        return { ...issue, total_votes: (issue.total_votes || 0) + 1 };
+                    }
+                    if (issue.id === previousVote) {
+                        return { ...issue, total_votes: Math.max(0, (issue.total_votes || 0) - 1) };
+                    }
+                    return issue;
+                })
+            );
+
+            queryClient.setQueryData(['userVote'], issueId === previousVote ? null : issueId);
+
+            return { previousIssues, previousVote };
+        },
+        onError: (err, issueId, context) => {
+            if (context?.previousIssues) {
+                queryClient.setQueryData(['issues'], context.previousIssues);
+            }
+            if (context?.previousVote !== undefined) {
+                queryClient.setQueryData(['userVote'], context.previousVote);
+            }
+            setError("Gagal menyimpan vote.");
+            console.error(err);
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ['issues'] });
+            queryClient.invalidateQueries({ queryKey: ['userVote'] });
+        },
+        onSuccess: () => {
+            setError(null);
+        },
+    });
+
+    const handleVote = (issueId) => {
         if (!user) {
             setError("Kamu harus login untuk voting.");
             return;
         }
-
-        const prevIssues = issues;
-        const prevSelectedId = selectedIssueId;
-
-        setIssues(prev => prev.map(issue => {
-            if (issue.id === issueId && selectedIssueId !== issueId) {
-                return { ...issue, total_votes: issue.total_votes + 1 };
-            }
-            if (issue.id === selectedIssueId) {
-                return { ...issue, total_votes: issue.total_votes - 1 };
-            }
-            return issue;
-        }));
-        setSelectedIssueId(selectedIssueId === issueId ? null : issueId);
-
-        try {
-            setError(null);
-            await handleVoteCount(issueId);
-        } catch (err) {
-            setIssues(prevIssues);
-            setSelectedIssueId(prevSelectedId);
-            setError("Gagal menyimpan vote.");
-            console.error(err);
-        }
+        setError(null);
+        voteMutation.mutate(issueId);
     };
 
     return (

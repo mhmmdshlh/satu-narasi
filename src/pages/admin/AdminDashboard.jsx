@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "../../hooks/useAuth"
 import { getAdminStats } from "../../services/admin/admin.service"
 import { faUsers, faFileAlt, faComments, faClipboardList } from "@fortawesome/free-solid-svg-icons"
@@ -6,17 +6,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 
 export const AdminDashboard = () => {
     const { profile } = useAuth();
-    const [stats, setStats] = useState(null);
-    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        getAdminStats()
-            .then(setStats)
-            .catch(console.error)
-            .finally(() => setLoading(false));
-    }, []);
+    const { data: stats, isLoading } = useQuery({
+        queryKey: ['admin', 'stats'],
+        queryFn: getAdminStats,
+    });
 
-    if (loading) {
+    if (isLoading) {
         return <p className="text-gray-600">Memuat data...</p>;
     }
 

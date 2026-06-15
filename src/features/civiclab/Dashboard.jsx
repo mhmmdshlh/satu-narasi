@@ -1,7 +1,8 @@
+import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { faChartLine, faCity, faFileAlt, faUsers } from "@fortawesome/free-solid-svg-icons"
 import { StatCard } from "../../features/civiclab/StatCard"
 import { BaseBox } from "../../components/BaseBox"
-import { useEffect, useState } from "react"
 import { getStatJabar } from "../../services/civiclab/dashboard.service.js"
 import { getTotalApprovedReports } from "../../services/civiclab/report.service.js"
 import { ReportsModal } from "./ReportsModal.jsx"
@@ -9,22 +10,17 @@ import { BaseCard } from "../../components/BaseCard"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 
 export const Dashboard = () => {
-    const [statJabar, setStatJabar] = useState(null);
-    const [totalReports, setTotalReports] = useState(0);
     const [showModal, setShowModal] = useState(false);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            const [data, count] = await Promise.all([
-                getStatJabar(),
-                getTotalApprovedReports(),
-            ]);
-            setStatJabar(data);
-            setTotalReports(count);
-        };
+    const { data: statJabar } = useQuery({
+        queryKey: ['civiclab', 'stats'],
+        queryFn: getStatJabar,
+    });
 
-        fetchData();
-    }, []);
+    const { data: totalReports = 0 } = useQuery({
+        queryKey: ['civiclab', 'totalApprovedReports'],
+        queryFn: getTotalApprovedReports,
+    });
 
     return (
         <>

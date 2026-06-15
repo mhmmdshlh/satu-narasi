@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { getAllReports, approveReport, rejectReport } from "../../services/admin/admin.service"
 
 const STATUS_LABEL = {
@@ -8,43 +9,36 @@ const STATUS_LABEL = {
 };
 
 export const AdminReports = () => {
-    const [reports, setReports] = useState([]);
     const [filter, setFilter] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
 
-    useEffect(() => {
-        const fetch = async () => {
-            setLoading(true);
-            try {
-                const data = await getAllReports(filter);
-                setReports(data);
-            } catch {
-                console.error("Gagal memuat laporan");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetch();
-    }, [filter]);
+    const { data: reports = [], isLoading } = useQuery({
+        queryKey: ['admin', 'reports', { status: filter }],
+        queryFn: () => getAllReports(filter),
+    });
 
-    const handleApprove = async (id) => {
+    const approveMutation = useMutation({
+        mutationFn: approveReport,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
+        },
+    });
+
+    const rejectMutation = useMutation({
+        mutationFn: rejectReport,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
+        },
+    });
+
+    const handleApprove = (id) => {
         if (!window.confirm("Setujui laporan ini?")) return;
-        try {
-            await approveReport(id);
-            setReports(prev => prev.map(r => r.id === id ? { ...r, status: 'approved' } : r));
-        } catch {
-            alert("Gagal menyetujui laporan.");
-        }
+        approveMutation.mutate(id);
     };
 
-    const handleReject = async (id) => {
+    const handleReject = (id) => {
         if (!window.confirm("Tolak laporan ini?")) return;
-        try {
-            await rejectReport(id);
-            setReports(prev => prev.map(r => r.id === id ? { ...r, status: 'rejected' } : r));
-        } catch {
-            alert("Gagal menolak laporan.");
-        }
+        rejectMutation.mutate(id);
     };
 
     const filters = [
@@ -70,7 +64,7 @@ export const AdminReports = () => {
                 ))}
             </div>
 
-            {loading ? (
+            {isLoading ? (
                 <p className="text-gray-600">Memuat data...</p>
             ) : reports.length === 0 ? (
                 <p className="text-gray-500">Belum ada laporan.</p>

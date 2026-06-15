@@ -1,166 +1,126 @@
-import { useEffect, useState, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faHeart, faEye, faComment, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons"
-import { getDiscussion, toggleLike, createComment, updateDiscussion, deleteDiscussion, incrementDiscussionViews } from "../services/forum/forum.service"
+import { getDiscussion, getComments, getUserLike, toggleLike, createComment, updateDiscussion, deleteDiscussion, incrementDiscussionViews } from "../services/forum/forum.service"
 import { CommentBox } from "../features/forum/CommentBox"
 import { useAuth } from "../hooks/useAuth"
 import { CategoryTag } from "../components/CategoryTag"
 import { BackButton } from "../components/BackButton"
-import { supabase } from "../services/supabase/client"
 
 export const DiscussionDetail = () => {
     const { id } = useParams();
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [discussion, setDiscussion] = useState(null);
-    const [comments, setComments] = useState([]);
-    const [hasLiked, setHasLiked] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [commentText, setCommentText] = useState("");
-    const [submitting, setSubmitting] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editTitle, setEditTitle] = useState("");
     const [editContent, setEditContent] = useState("");
     const [editCategory, setEditCategory] = useState("");
 
-    const loadDiscussion = useCallback(async () => {
-        try {
-            const data = await getDiscussion(id);
-            setDiscussion(data);
-            setEditTitle(data.title);
-            setEditContent(data.content);
-            setEditCategory(data.category);
-        } catch (error) {
-            console.error("Error loading discussion:", error);
-        } finally {
-            setLoading(false);
-        }
-    }, [id]);
+    const { data: discussion, isLoading } = useQuery({
+        queryKey: ['discussion', id],
+        queryFn: () => getDiscussion(id),
+    });
 
-    const loadComments = useCallback(async () => {
-        try {
-            const { data, error } = await supabase
-                .from('comments')
-                .select('*, author:profiles(username, full_name)')
-                .eq('discussion_id', id)
-                .order('created_at', { ascending: true });
+    const { data: comments = [] } = useQuery({
+        queryKey: ['comments', id],
+        queryFn: () => getComments(id),
+    });
 
-            if (error) throw error;
-            setComments(data || []);
-        } catch (error) {
-            console.error("Error loading comments:", error);
-            setComments([]);
-        }
-    }, [id]);
-
-    const loadUserLike = useCallback(async () => {
-        try {
-            if (!user) {
-                setHasLiked(false);
-                return;
-            }
-            const { data, error } = await supabase
-                .from('discussion_likes')
-                .select('id')
-                .eq('discussion_id', id)
-                .eq('user_id', user.id)
-                .maybeSingle();
-
-            if (error) throw error;
-            setHasLiked(!!data);
-        } catch (error) {
-            console.error("Error loading user like:", error);
-            setHasLiked(false);
-        }
-    }, [id, user]);
+    const { data: hasLiked = false } = useQuery({
+        queryKey: ['userLike', id],
+        queryFn: () => getUserLike(id),
+        enabled: !!user,
+    });
 
     useEffect(() => {
-        loadDiscussion();
-        loadComments();
-        loadUserLike();
-    }, [id, loadDiscussion, loadComments, loadUserLike]);
-
-    useEffect(() => {
-        if (user) {
+        if (user && id) {
             incrementDiscussionViews(id).catch(console.error);
         }
     }, [id, user]);
 
-    const handleLike = async () => {
-        if (!user) {
-            navigate("/login");
-            return;
-        }
+    const likeMutation = useMutation({
+        mutationFn: () => toggleLike(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['discussion', id] });
+            queryClient.invalidateQueries({ queryKey: ['userLike', id] });
+        },
+    });
 
-        try {
-            const liked = await toggleLike(id);
-            setHasLiked(liked);
-            await loadDiscussion(); // Reload untuk update like count
-        } catch (error) {
-            console.error("Error toggling like:", error);
-        }
-    };
-
-    const handleCommentSubmit = async (e) => {
-        e.preventDefault();
-        if (!user) {
-            navigate("/login");
-            return;
-        }
-
-        if (!commentText.trim()) return;
-
-        setSubmitting(true);
-        try {
-            await createComment({
-                discussion_id: id,
-                content: commentText
-            });
+    const commentMutation = useMutation({
+        mutationFn: () => createComment({ discussion_id: id, content: commentText }),
+        onSuccess: () => {
             setCommentText("");
-            await loadComments();
-        } catch (error) {
-            console.error("Error creating comment:", error);
-        } finally {
-            setSubmitting(false);
-        }
-    };
+            queryClient.invalidateQueries({ queryKey: ['comments', id] });
+        },
+    });
 
-    const handleEditDiscussion = async (e) => {
-        e.preventDefault();
-        setSubmitting(true);
-        try {
-            await updateDiscussion(id, {
-                title: editTitle,
-                content: editContent,
-                category: editCategory
-            });
-            await loadDiscussion();
+    const editMutation = useMutation({
+        mutationFn: () => updateDiscussion(id, { title: editTitle, content: editContent, category: editCategory }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['discussion', id] });
             setIsEditing(false);
-        } catch (error) {
-            console.error("Error updating discussion:", error);
+        },
+        onError: () => {
             alert("Failed to update discussion");
-        } finally {
-            setSubmitting(false);
-        }
-    };
+        },
+    });
 
-    const handleDeleteDiscussion = async () => {
-        if (!window.confirm("Are you sure you want to delete this discussion? This action cannot be undone.")) {
+    const deleteMutation = useMutation({
+        mutationFn: () => deleteDiscussion(id),
+        onSuccess: () => navigate("/forum"),
+        onError: () => {
+            alert("Failed to delete discussion");
+        },
+    });
+
+    const handleLike = () => {
+        if (!user) {
+            navigate("/login");
             return;
         }
+        likeMutation.mutate();
+    };
 
-        try {
-            await deleteDiscussion(id);
-            navigate("/forum");
-        } catch (error) {
-            console.error("Error deleting discussion:", error);
-            alert("Failed to delete discussion");
+    const handleCommentSubmit = (e) => {
+        e.preventDefault();
+        if (!user) {
+            navigate("/login");
+            return;
         }
+        if (!commentText.trim()) return;
+        commentMutation.mutate();
+    };
+
+    const handleEditDiscussion = (e) => {
+        e.preventDefault();
+        editMutation.mutate();
+    };
+
+    const handleDeleteDiscussion = () => {
+        if (!window.confirm("Are you sure you want to delete this discussion? This action cannot be undone.")) return;
+        deleteMutation.mutate();
     };
 
     const handleCommentDeleted = () => {
-        loadComments();
+        queryClient.invalidateQueries({ queryKey: ['comments', id] });
+    };
+
+    const startEditing = () => {
+        setEditTitle(discussion.title);
+        setEditContent(discussion.content);
+        setEditCategory(discussion.category);
+        setIsEditing(true);
+    };
+
+    const cancelEditing = () => {
+        setIsEditing(false);
+        setEditTitle(discussion.title);
+        setEditContent(discussion.content);
+        setEditCategory(discussion.category);
     };
 
     const formatDate = (dateString) => {
@@ -174,7 +134,9 @@ export const DiscussionDetail = () => {
         });
     };
 
-    if (loading) {
+    const isSubmitting = likeMutation.isPending || commentMutation.isPending || editMutation.isPending;
+
+    if (isLoading) {
         return (
             <div className="container mx-auto px-4 py-8">
                 <p className="text-center text-gray-600">Loading...</p>
@@ -192,10 +154,8 @@ export const DiscussionDetail = () => {
 
     return (
         <div className="container mx-auto px-4 py-8 mt-16">
-            {/* Discussion Content */}
             <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8 mb-6">
                 {isEditing ? (
-                    /* Edit Form */
                     <form onSubmit={handleEditDiscussion}>
                         <div className="space-y-4 mb-6">
                             <div>
@@ -204,7 +164,7 @@ export const DiscussionDetail = () => {
                                     value={editCategory}
                                     onChange={(e) => setEditCategory(e.target.value)}
                                     className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500"
-                                    disabled={submitting}
+                                    disabled={isSubmitting}
                                 >
                                     <option value="Umum">Umum</option>
                                     <option value="Pertanyaan">Pertanyaan</option>
@@ -223,7 +183,7 @@ export const DiscussionDetail = () => {
                                     onChange={(e) => setEditTitle(e.target.value)}
                                     className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500"
                                     required
-                                    disabled={submitting}
+                                    disabled={isSubmitting}
                                 />
                             </div>
                             <div>
@@ -234,7 +194,7 @@ export const DiscussionDetail = () => {
                                     className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500"
                                     rows="8"
                                     required
-                                    disabled={submitting}
+                                    disabled={isSubmitting}
                                 />
                             </div>
                         </div>
@@ -242,20 +202,15 @@ export const DiscussionDetail = () => {
                             <button
                                 type="submit"
                                 className="w-full sm:w-auto bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50"
-                                disabled={submitting}
+                                disabled={isSubmitting}
                             >
-                                {submitting ? "Saving..." : "Save Changes"}
+                                {editMutation.isPending ? "Saving..." : "Save Changes"}
                             </button>
                             <button
                                 type="button"
-                                onClick={() => {
-                                    setIsEditing(false);
-                                    setEditTitle(discussion.title);
-                                    setEditContent(discussion.content);
-                                    setEditCategory(discussion.category);
-                                }}
+                                onClick={cancelEditing}
                                 className="w-full sm:w-auto px-6 py-2 border border-gray-300 rounded-lg font-semibold hover:bg-gray-100 transition"
-                                disabled={submitting}
+                                disabled={isSubmitting}
                             >
                                 Cancel
                             </button>
@@ -276,9 +231,9 @@ export const DiscussionDetail = () => {
                             <span className="font-semibold">
                                 By {discussion.author_username || discussion.author_full_name || 'Anonymous'}
                             </span>
-                            <span className="hidden sm:inline">•</span>
+                            <span className="hidden sm:inline">&bull;</span>
                             <span className="w-full sm:w-auto">{formatDate(discussion.created_at)}</span>
-                            <span>•</span>
+                            <span>&bull;</span>
                             <span><FontAwesomeIcon icon={faEye} className="mr-1" />{discussion.views} views</span>
                         </div>
 
@@ -286,7 +241,6 @@ export const DiscussionDetail = () => {
                             <p className="text-gray-800 whitespace-pre-wrap">{discussion.content}</p>
                         </div>
 
-                        {/* Like Button */}
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t pt-4">
                             <div className="flex items-center gap-4">
                                 <button
@@ -303,11 +257,10 @@ export const DiscussionDetail = () => {
                                 <span className="font-bold text-base sm:text-lg text-gray-700">{discussion.likes_count || 0} likes</span>
                             </div>
 
-                            {/* Edit/Delete Buttons - Only show if user is author */}
                             {user && user.id === discussion.author_id && (
                                 <div className="flex gap-2">
                                     <button
-                                        onClick={() => setIsEditing(true)}
+                                        onClick={startEditing}
                                         className="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-lg font-semibold transition"
                                     >
                                         <FontAwesomeIcon icon={faEdit} className="mr-1" />
@@ -327,43 +280,38 @@ export const DiscussionDetail = () => {
                 )}
             </div>
 
-            {/* Comments Section */}
             <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8">
                 <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-6">
                     <FontAwesomeIcon icon={faComment} className="mr-2" />
                     {comments.length} Comments
                 </h3>
 
-                {/* Comment Form */}
-                {
-                    user ? (
-                        <form onSubmit={handleCommentSubmit} className="mb-8">
-                            <textarea
-                                value={commentText}
-                                onChange={(e) => setCommentText(e.target.value)}
-                                className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-red-500"
-                                placeholder="Write a comment..."
-                                rows="4"
-                                disabled={submitting}
-                            />
-                            <button
-                                type="submit"
-                                className="w-full sm:w-auto mt-3 bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50"
-                                disabled={submitting || !commentText.trim()}
-                            >
-                                {submitting ? "Posting..." : "Post Comment"}
-                            </button>
-                        </form>
-                    ) : (
-                        <div className="mb-8 p-4 bg-gray-100 rounded-lg text-center">
-                            <p className="text-gray-600">
-                                <Link to="/login" className="text-red-500 font-semibold hover:underline">Login</Link> to post a comment
-                            </p>
-                        </div>
-                    )
-                }
+                {user ? (
+                    <form onSubmit={handleCommentSubmit} className="mb-8">
+                        <textarea
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            placeholder="Write a comment..."
+                            rows="4"
+                            disabled={isSubmitting}
+                        />
+                        <button
+                            type="submit"
+                            className="w-full sm:w-auto mt-3 bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50"
+                            disabled={isSubmitting || !commentText.trim()}
+                        >
+                            {commentMutation.isPending ? "Posting..." : "Post Comment"}
+                        </button>
+                    </form>
+                ) : (
+                    <div className="mb-8 p-4 bg-gray-100 rounded-lg text-center">
+                        <p className="text-gray-600">
+                            <Link to="/login" className="text-red-500 font-semibold hover:underline">Login</Link> to post a comment
+                        </p>
+                    </div>
+                )}
 
-                {/* Comments List */}
                 <div className="space-y-4">
                     {comments.length === 0 ? (
                         <p className="text-center text-gray-600 py-8">No comments yet. Be the first to comment!</p>
@@ -378,7 +326,7 @@ export const DiscussionDetail = () => {
                         ))
                     )}
                 </div>
-            </div >
-        </div >
+            </div>
+        </div>
     );
 };
