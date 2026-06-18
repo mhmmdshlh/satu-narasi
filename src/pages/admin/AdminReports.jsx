@@ -114,3 +114,5 @@ export const AdminReports = () => {
         </div>
     );
 };
+
+export default AdminReports

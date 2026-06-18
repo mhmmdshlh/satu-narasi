@@ -16,3 +16,5 @@ export const Akademi = () => {
         </>
     )
 }
+
+export default Akademi

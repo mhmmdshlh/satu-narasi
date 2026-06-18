@@ -115,3 +115,5 @@ export const AdminDiscussions = () => {
         </div>
     );
 };
+
+export default AdminDiscussions

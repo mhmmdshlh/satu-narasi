@@ -16,3 +16,5 @@ export const Civiclab = () => {
         </>
     )
 }
+
+export default Civiclab

@@ -43,7 +43,7 @@ export const AdminDashboard = () => {
                     <p className="text-sm sm:text-base text-red-700 font-medium">Laporan Ditolak</p>
                 </div>
             </div>
-        </div>
+    </div>
     );
 };
 
@@ -54,3 +54,5 @@ const StatCard = ({ icon, title, description, variant }) => (
         <p className="text-sm sm:text-base text-gray-700 font-medium">{description}</p>
     </div>
 );
+
+export default AdminDashboard
