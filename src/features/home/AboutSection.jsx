@@ -1,4 +1,4 @@
-import gedungSateImg from "../../assets/gedung-sate.jpg";
+import gedungSateImg from "../../assets/gedung-sate.webp";
 
 export const AboutSection = () => {
     return (
@@ -7,7 +7,7 @@ export const AboutSection = () => {
                 <div className="text-center mb-10 sm:mb-12">
                     <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-red-500 mb-6 leading-tight">Apa itu SatuNarasi?</h2>
                     <figure className="max-w-2xl mx-auto mb-6">
-                        <img src={gedungSateImg} alt="Gedung Sate Bandung"
+                        <img src={gedungSateImg} alt="Gedung Sate Bandung" loading="lazy"
                             className="w-full h-48 sm:h-64 md:h-72 object-cover rounded-lg border-l-4 sm:border-l-7 border-r-4 sm:border-r-7 border-red-500 px-1" />
                         <figcaption className="text-xs text-gray-400 italic text-center mt-2">
                             Sumber foto: <a

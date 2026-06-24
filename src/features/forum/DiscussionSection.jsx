@@ -22,6 +22,8 @@ export const DiscussionSection = () => {
         queryClient.invalidateQueries({ queryKey: ['discussions'] });
     };
 
+    const skeletonCards = [1, 2, 3];
+
     return (
         <BaseBox>
             {user && (
@@ -38,8 +40,25 @@ export const DiscussionSection = () => {
             )}
 
             {isLoading ? (
-                <div className="text-center py-8">
-                    <p className="text-gray-600">Loading discussions...</p>
+                <div className="flex flex-col gap-2 animate-pulse">
+                    {skeletonCards.map(i => (
+                        <div key={i} className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="w-7 aspect-square bg-gray-200 rounded-full" />
+                                <div className="h-4 bg-gray-200 rounded w-24" />
+                                <span className="text-gray-200 font-bold">|</span>
+                                <div className="h-4 bg-gray-200 rounded w-16" />
+                            </div>
+                            <div className="h-5 bg-gray-200 rounded w-3/4 mb-2" />
+                            <div className="h-4 bg-gray-200 rounded w-full mb-1" />
+                            <div className="h-4 bg-gray-200 rounded w-2/3 mb-3" />
+                            <div className="flex gap-4 sm:gap-6">
+                                <div className="h-4 bg-gray-200 rounded w-16" />
+                                <div className="h-4 bg-gray-200 rounded w-20" />
+                                <div className="h-4 bg-gray-200 rounded w-14" />
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : discussions.length === 0 ? (
                 <div className="text-center py-8">

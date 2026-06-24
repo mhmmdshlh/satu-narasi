@@ -12,15 +12,34 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 export const Dashboard = () => {
     const [showModal, setShowModal] = useState(false);
 
-    const { data: statJabar } = useQuery({
+    const { data: statJabar, isLoading: statsLoading } = useQuery({
         queryKey: ['civiclab', 'stats'],
         queryFn: getStatJabar,
     });
 
-    const { data: totalReports = 0 } = useQuery({
+    const { data: totalReports = 0, isLoading: reportsLoading } = useQuery({
         queryKey: ['civiclab', 'totalApprovedReports'],
         queryFn: getTotalApprovedReports,
     });
+
+    const isLoading = statsLoading || reportsLoading;
+
+    if (isLoading) {
+        return (
+            <BaseBox>
+                <div className="h-8 bg-gray-200 rounded w-64 mb-4 sm:mb-6 animate-pulse" />
+                <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 animate-pulse">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className={`p-4 sm:p-6 rounded-xl ${i % 2 === 0 ? 'bg-gray-50 border-l-4 border-gray-200' : 'bg-red-50 border-l-4 border-red-200'}`}>
+                            <div className="w-8 h-8 bg-gray-200 rounded mb-2" />
+                            <div className="h-7 bg-gray-200 rounded w-24 mb-1" />
+                            <div className="h-4 bg-gray-200 rounded w-20" />
+                        </div>
+                    ))}
+                </div>
+            </BaseBox>
+        );
+    }
 
     return (
         <>

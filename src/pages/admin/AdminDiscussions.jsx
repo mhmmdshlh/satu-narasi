@@ -13,11 +13,7 @@ export const AdminDiscussions = () => {
         queryFn: getAllDiscussions,
     });
 
-    const { data: comments = [] } = useQuery({
-        queryKey: ['admin', 'comments', expanded],
-        queryFn: () => getAllComments(expanded),
-        enabled: !!expanded,
-    });
+    // comments and commentsLoading now declared above with the loading skeleton
 
     const deleteDiscussionMutation = useMutation({
         mutationFn: deleteDiscussion,
@@ -53,8 +49,33 @@ export const AdminDiscussions = () => {
         deleteCommentMutation.mutate(id);
     };
 
+    const { data: comments = [], isLoading: commentsLoading } = useQuery({
+        queryKey: ['admin', 'comments', expanded],
+        queryFn: () => getAllComments(expanded),
+        enabled: !!expanded,
+    });
+
     if (isLoading) {
-        return <p className="text-gray-600">Memuat data...</p>;
+        return (
+            <div className="space-y-4 animate-pulse">
+                <div className="h-9 bg-gray-200 rounded w-64 mb-6" />
+                {[1, 2, 3].map(i => (
+                    <div key={i} className="bg-white rounded-xl shadow p-4 sm:p-6">
+                        <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0 w-full">
+                                <div className="h-5 bg-gray-200 rounded w-3/4 mb-2" />
+                                <div className="h-4 bg-gray-200 rounded w-1/2 mb-2" />
+                                <div className="h-4 bg-gray-200 rounded w-full" />
+                            </div>
+                            <div className="flex gap-2 w-full sm:w-auto">
+                                <div className="h-8 bg-gray-200 rounded w-20" />
+                                <div className="h-8 bg-gray-200 rounded w-16" />
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
     }
 
     return (
@@ -89,8 +110,18 @@ export const AdminDiscussions = () => {
 
                             {expanded === disc.id && (
                                 <div className="border-t border-gray-100 p-4 sm:p-6 space-y-3">
-                                    <h4 className="font-bold text-gray-700 text-sm sm:text-base">Komentar ({comments.length})</h4>
-                                    {comments.length === 0 ? (
+                                    <h4 className="font-bold text-gray-700 text-sm sm:text-base">Komentar {commentsLoading ? '' : `(${comments.length})`}</h4>
+                                    {commentsLoading ? (
+                                        <div className="space-y-3 animate-pulse">
+                                            {[1, 2].map(i => (
+                                                <div key={i} className="bg-gray-50 rounded-lg p-3">
+                                                    <div className="h-4 bg-gray-200 rounded w-24 mb-2" />
+                                                    <div className="h-3 bg-gray-200 rounded w-full mb-1" />
+                                                    <div className="h-3 bg-gray-200 rounded w-4/5" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : comments.length === 0 ? (
                                         <p className="text-sm text-gray-500">Belum ada komentar.</p>
                                     ) : (
                                         comments.map((c) => (

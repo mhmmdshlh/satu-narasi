@@ -38,7 +38,26 @@ export const ReportsModal = ({ onClose }) => {
 
                 <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
                     {isLoading ? (
-                        <p className="text-gray-500 text-sm text-center py-8">Memuat laporan...</p>
+                        <div className="space-y-4 animate-pulse">
+                            {[1, 2].map(i => (
+                                <div key={i} className="border border-gray-200 rounded-xl p-4">
+                                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                                        <div className="flex-1">
+                                            <div className="h-5 bg-gray-200 rounded w-3/4 mb-2" />
+                                            <div className="h-4 bg-gray-200 rounded w-1/2" />
+                                        </div>
+                                        <div className="h-4 bg-gray-200 rounded w-24" />
+                                    </div>
+                                    <div className="mt-2 space-y-2">
+                                        <div className="h-4 bg-gray-200 rounded w-full" />
+                                        <div className="h-4 bg-gray-200 rounded w-5/6" />
+                                        <div className="h-4 bg-gray-200 rounded w-2/3" />
+                                    </div>
+                                    <div className="h-32 bg-gray-200 rounded-lg mt-3" />
+                                    <div className="h-4 bg-gray-200 rounded w-36 mt-2" />
+                                </div>
+                            ))}
+                        </div>
                     ) : reports.length === 0 ? (
                         <p className="text-gray-500 text-sm text-center py-8">Belum ada laporan yang disetujui.</p>
                     ) : (
@@ -62,6 +81,7 @@ export const ReportsModal = ({ onClose }) => {
                                     <img
                                         src={report.image_url}
                                         alt="Foto laporan"
+                                        width={256} height={128}
                                         className="mt-3 h-32 object-cover rounded-lg border border-gray-200"
                                     />
                                 )}

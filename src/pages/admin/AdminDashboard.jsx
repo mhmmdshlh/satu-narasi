@@ -13,7 +13,30 @@ export const AdminDashboard = () => {
     });
 
     if (isLoading) {
-        return <p className="text-gray-600">Memuat data...</p>;
+        return (
+            <div className="animate-pulse">
+                <div className="h-9 bg-gray-200 rounded w-56 mb-2" />
+                <div className="h-5 bg-gray-200 rounded w-72 mb-6 sm:mb-8" />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className={`p-4 sm:p-6 rounded-xl ${i % 2 === 0 ? 'bg-gray-50 border-l-4 border-gray-200' : 'bg-red-50 border-l-4 border-red-200'}`}>
+                            <div className="w-8 h-8 bg-gray-200 rounded mb-2" />
+                            <div className="h-9 bg-gray-200 rounded w-16 mb-1" />
+                            <div className="h-4 bg-gray-200 rounded w-24" />
+                        </div>
+                    ))}
+                </div>
+                <div className="h-7 bg-gray-200 rounded w-48 mt-8 sm:mt-10 mb-4" />
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
+                    {[1, 2, 3].map(i => (
+                        <div key={i} className="p-4 sm:p-6 rounded-xl bg-gray-50 border-l-4 border-gray-200">
+                            <div className="h-9 bg-gray-200 rounded w-12 mb-1" />
+                            <div className="h-4 bg-gray-200 rounded w-28" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
     }
 
     return (

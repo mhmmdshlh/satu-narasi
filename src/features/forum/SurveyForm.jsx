@@ -10,7 +10,7 @@ export const SurveyForm = () => {
     const queryClient = useQueryClient();
     const [error, setError] = useState(null);
 
-    const { data: issues = [] } = useQuery({
+    const { data: issues = [], isLoading } = useQuery({
         queryKey: ['issues'],
         queryFn: getIssues,
     });
@@ -86,19 +86,34 @@ export const SurveyForm = () => {
             )}
 
             <form id="survey-form">
-                <div className="space-y-4 mb-6 select-none">
-                    {issues.map((issue) => (
-                        <SurveyItem
-                            key={issue.id}
-                            id={issue.id}
-                            title={issue.issue_name}
-                            description={issue.issue_description}
-                            votes={issue.total_votes}
-                            checked={selectedIssueId === issue.id}
-                            onChange={handleVote}
-                        />
-                    ))}
-                </div>
+                {isLoading ? (
+                    <div className="space-y-4 mb-6 select-none animate-pulse">
+                        {[1, 2, 3, 4, 5].map(i => (
+                            <div key={i} className="flex items-center p-3 sm:p-5 rounded-xl border-2 border-gray-200">
+                                <div className="w-4 h-4 sm:w-5 sm:h-5 bg-gray-200 rounded-full shrink-0" />
+                                <div className="ml-3 sm:ml-4 flex-1">
+                                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-1" />
+                                    <div className="h-3 bg-gray-200 rounded w-3/4" />
+                                </div>
+                                <div className="h-4 bg-gray-200 rounded w-16 ml-2 shrink-0" />
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="space-y-4 mb-6 select-none">
+                        {issues.map((issue) => (
+                            <SurveyItem
+                                key={issue.id}
+                                id={issue.id}
+                                title={issue.issue_name}
+                                description={issue.issue_description}
+                                votes={issue.total_votes}
+                                checked={selectedIssueId === issue.id}
+                                onChange={handleVote}
+                            />
+                        ))}
+                    </div>
+                )}
                 {!user && (
                     <p className="text-sm text-gray-500 mt-2">Login untuk ikut voting.</p>
                 )}

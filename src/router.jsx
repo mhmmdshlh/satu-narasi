@@ -7,6 +7,7 @@ import { Login } from "./pages/Login"
 import { SignUp } from "./pages/SignUp"
 import AdminLayout from "./layouts/AdminLayout"
 import ProtectedRoute from "./components/ProtectedRoute"
+import AkademiSkeleton from "./features/akademi/AkademiSkeleton"
 
 const Akademi = lazy(() => import("./pages/Akademi"))
 const Civiclab = lazy(() => import("./pages/Civiclab"))
@@ -22,7 +23,7 @@ export const router = createBrowserRouter([
         element: <MainLayout />,
         children: [
             { index: true, element: <Home /> },
-            { path: "akademi", element: <LazyPage><Akademi /></LazyPage> },
+            { path: "akademi", element: <LazyPage fallback={<AkademiSkeleton />}><Akademi /></LazyPage> },
             { path: "civiclab", element: <LazyPage><Civiclab /></LazyPage> },
             { path: "forum", element: <LazyPage><Forum /></LazyPage> },
             { path: "forum/:id", element: <LazyPage><DiscussionDetail /></LazyPage> },
